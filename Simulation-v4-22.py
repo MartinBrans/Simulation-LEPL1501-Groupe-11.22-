@@ -140,6 +140,7 @@ def graphiques_energies() :
     plt.title("Energies en fonction du temps")
     plt.plot(t, E_G,label="En. pot. gravifique")
     plt.plot(t, E_K,label="En. cinetique")
+    plt.plot(t, E_A,label="En. pot. couple d'affaissement")
     plt.plot(t, E_Total,label="En. total du systeme")
     plt.xlabel("Temps [s]")
     plt.ylabel("Energie [J]")
