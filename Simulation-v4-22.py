@@ -1,4 +1,4 @@
-# Simulation d'une charge accrochée à la grue flottante
+# Simulation d'une charge accrochée à la grue flottante et qui se déplace pendant 3 secondes vers l'avant
 
 import math
 import matplotlib.pyplot as plt
@@ -7,8 +7,9 @@ import Modelisation_physique_v3 as mod
 
 ### Paramètres du système
 
-D = 0.6              # Coefficient d'amortissement
-I = 0.12            # Moment d'inertie
+D = 0.6             # Coefficient d'amortissement, cette valeur a été estimée, mais ne peut être confirmée que expérimentalement
+I = 0.12            # Moment d'inertie, calculé sur Fusion 360
+
 
 ### Paramètres de la simulation
 
@@ -19,19 +20,19 @@ omega_0 = 0.0        # vitesse initiale [m/s]
 Ca_0 = - mod.G[3][0] * (mod.poids_grue + mod.poids_charge)          # couple initial [N m]
 temps = 3            # temps que met la charge à arriver à sa position finale [s]
 
-t = np.arange(0, end, step)
-theta = np.empty_like(t)          
-omega = np.empty_like(t)
-a = np.empty_like(t)
-Gx = np.empty_like(t)
-Gy = np.empty_like(t)
-Ca = np.empty_like(t)
+t = np.arange(0, end, step) # Temps
+theta = np.empty_like(t)    # Angle d'inclinaison      
+omega = np.empty_like(t)    # Vitesse angulaire
+a = np.empty_like(t)        # Accélération angulaire
+Gx = np.empty_like(t)       # Position du centre de gravité du bras + de la charge (composantes horizontale)
+Gy = np.empty_like(t)       # Position du centre de gravité du bras + de la charge (composantes verticale)
+Ca = np.empty_like(t)       # Couple d'affaissement
 
-E_G = np.empty_like(t)
-E_C = np.empty_like(t)
-E_K = np.empty_like(t)
-E_A = np.empty_like(t)
-E_Total = np.empty_like(t)
+E_G = np.empty_like(t)      # Energie potentielle gravifique
+E_C = np.empty_like(t)      # Energie potentielle de la poussée d'archimède
+E_K = np.empty_like(t)      # Energie cinétique
+E_A = np.empty_like(t)      # Engergie potentielle du couple d'affaissement
+E_Total = np.empty_like(t)  # Energie totale du système
 
 def simulation():
     """
@@ -51,36 +52,35 @@ def simulation():
         
         dt = step
         
-        """Eqt de la droite reliant la position initiale a la position finale de G dans la situation 3 en fct du temps :
-            Gx[i+1] = 0.055903333333333333*(i+1)*dt + 0.09579
-            Gy[i+1] = 0.05294*(i+1)*dt + 0.18272
-        """
+
         
         if i * dt < temps:
-            Gx[i+1] = 0.055903333333333333*(i+1)*dt + 0.09579
-            Gy[i+1] = 0.05294*(i+1)*dt + 0.18272
+            # Hypothèse : le centre de gravité du bras + de la charge se déplace en ligne droite
+            Gx[i+1] = ((mod.G[4][0]-mod.G[3][0])/temps)*(i+1)*dt + mod.G[3][0] # x = mt + p avec m = delta x/delta t
+            Gy[i+1] = ((mod.G[4][1]-mod.G[3][1])/temps)*(i+1)*dt + mod.G[3][1] # y = mt + p avec m = delta y/delta t
         else :
-            Gx[i+1] = mod.G[4][0]
+            Gx[i+1] = mod.G[4][0] # Lorsque la masse a fini son mouvement, sa position est constante
             Gy[i+1] = mod.G[4][1]
         
-        Ca[i+1] = - Gx[i+1] * (mod.poids_grue + mod.poids_charge)
+        Ca[i+1] = - Gx[i+1] * (mod.poids_grue + mod.poids_charge) # Couple d'affaissement généré par le bras et la masse
         
-        C = mod.somme_des_couples(theta[i], Ca[i])[0] - D*omega[i]
+        C = mod.somme_des_couples(theta[i])[0] - D*omega[i] # Somme des couples = Cr + Cg + Cd
         
-        theta[i+1] = theta[i] + omega[i] * dt
+        theta[i+1] = theta[i] + omega[i] * dt # On utilise des approximations linéaires à chaque pas pour calculer la position du point suivant
         omega[i+1] = omega[i] + a[i] * dt
         a[i+1] = C / I
         
     ### Calculs d'énergie
         
         E_G[i+1] = (mod.poids_grue + mod.poids_charge + mod.poids_base)*(mod.rotation(mod.Gtotal,math.atan(mod.Gtotal[1]/mod.Gtotal[0])+theta[i])[1]-mod.Gtotal[1])
-        #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0])
+        #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0]) <- cette formule n'a pas été intégrée, pour le moment
+        #                                                                    car aucune fonction ne renvoie la composante verticale de la position du centre de poussée
         E_K[i+1] = I*omega[i]*omega[i]/2
-        E_A[i+1] = -mod.somme_des_couples(theta[i],Ca[i])[1] * theta[i]
+        E_A[i+1] = -mod.somme_des_couples(theta[i])[1] * theta[i]
         E_Total[i+1] = E_K[i+1] + E_G[i+1] + E_A[i+1] # + E_C[i+1]
         
 def distance_couple() :
-    
+    """ Cette fonction sert à s'assurer que la position de la charge varie bien au cours du temps"""
     plt.figure(1)
     plt.subplot(1,2,1)
     plt.plot(t, Gx, label = "Position horizontale du centre de gravite")
@@ -114,7 +114,7 @@ def graphiques():
     plt.legend()
     plt.show()
     
-def graphique_theta() :
+def graphique_detaille_theta() :
     
     plt.figure(1)
     plt.plot(t, theta, label = "Theta")
@@ -134,7 +134,7 @@ def diagramme_de_phase() :
     plt.ylabel("Omega [rad/s]")
     plt.show()
     
-def graphique_energies() :
+def graphiques_energies() :
     
     plt.figure(1)
     plt.title("Energies en fonction du temps")
@@ -145,10 +145,11 @@ def graphique_energies() :
     plt.ylabel("Energie [J]")
     plt.legend(loc="upper right")
     plt.show()
-    
-simulation()
-distance_couple()
-graphiques()
-graphique_theta()
-diagramme_de_phase()
-graphique_energies()
+
+if __name__ == "__main__" :
+    simulation()
+    # distance_couple()
+    graphiques()
+    graphique_detaille_theta()
+    diagramme_de_phase()
+    graphiques_energies()
