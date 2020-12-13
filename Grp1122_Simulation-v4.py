@@ -123,6 +123,8 @@ def graphique_detaille_theta() :
     plt.plot([0,end], [-mod.theta_sub, -mod.theta_sub], '--r')
     plt.plot([0,end], [mod.theta_soul, mod.theta_soul], '--m', label='Soulevement')
     plt.plot([0,end], [-mod.theta_soul, -mod.theta_soul], '--m')
+    plt.xlabel("Temps [s]")
+    plt.ylabel("Theta [rad]")
     plt.legend()
     plt.show()
     
