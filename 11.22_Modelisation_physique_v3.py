@@ -83,10 +83,10 @@ h_c = (poids_grue + poids_base + poids_charge)/((4 * 0.095) * long_base * 1000 *
 # Calcul de l'angle d'inclinaison maximal
 #########################################
 
-theta_sub =  m.atan((h_base-h_c)/(long_base/2)) # Angle maximal avant la submersion de la base
-theta_soul =  m.atan((h_c)/(long_base/2)) # Angle maximal avant le soulèvement du fond de la base
+theta_sub =  - m.atan((h_base-h_c)/(long_base/2)) # Angle maximal avant la submersion de la base
+theta_soul =  - m.atan((h_c)/(long_base/2)) # Angle maximal avant le soulèvement du fond de la base
 global theta_max
-theta_max = min(theta_sub,theta_soul) # L'angle à ne pas dépasser est le plus petit des deux angles critiques
+theta_max = max(theta_sub,theta_soul) # L'angle à ne pas dépasser est le plus petit des deux angles critiques
 
 
 ####################################################################################
@@ -150,7 +150,7 @@ def somme_des_couples(theta,Ca):
     return (somme, Ca, Cg, Cr)
 
 def modele_1():
-    """ Recherche dichotomique de l'angle d'équilibre, càd lorsque Cg + Cr == 0 """
+    """ Recherche dichotomique de l'angle d'équilibre, càd lorsque Ca + Cg + Cr == 0 """
     first = 0
     last = theta_max
     while first <= last :
@@ -160,12 +160,12 @@ def modele_1():
         Cg = somme_des_couples(theta, Ca)[2]
         Cr = somme_des_couples(theta, Ca)[3]
         
-        if abs(somme_des_couples(theta)[0]) < 0.001 :
+        if abs(somme_des_couples(theta)[0]) < 0.0000001 :
             return (theta / m.pi) * 180
         elif abs(Cr) < abs(Ca) :
-            last = theta - (1/1000)
+            first = theta - (1/10000000)
         else:
-            first = theta + (1/1000)
+            last = theta + (1/10000000)
                 
 def modele_2():
     """ Recherche dichotomique de l'angle d'équilibre, càd lorsque le centre de gravité est au dessus du centre de poussée """
@@ -177,9 +177,9 @@ def modele_2():
         if abs(rotation(Gtotal, theta)[0] - centre_de_poussee(theta)) < 0.000001 :
             return (theta / m.pi) * 180 
         elif rotation(Gtotal, theta)[0] < centre_de_poussee(theta) :
-            last = theta - (1/1000000)
+            last = theta + (1/1000000)
         else :
-            first = theta + (1/1000000)
+            first = theta - (1/1000000)
                 
                       
 if __name__ == "__main__" :           
