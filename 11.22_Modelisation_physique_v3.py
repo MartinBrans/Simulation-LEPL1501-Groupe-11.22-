@@ -67,8 +67,9 @@ position_charge = (d_charge, h_charge)
 # Ces valeurs ont été mesurées via Fusion 360, G est le centre de gravité du bras, du grappin et de la charge
 
 G = ((0.06996,0.17589,"1er et/ou 2eme fut ramasse"),(0.20851,0.16151,"1er fut place"),(0.20328,0.2341,"2eme fut place"),(0.09579,0.18272,"3eme fut ramasse"),(0.2635, 0.34154, "3eme fut place"))
-Gbase = (-0.0022,0.0053) # Il s'avère en réalité qu'on n'a simulé que la dernière situation dans notre programme
+Gbase = (-0.0022,0.0053) 
 Gtotal = ((G[4][0]*(m_grue+m_charge)+Gbase[0]*m_base)/(m_grue+m_charge+m_base),(G[4][1]*(m_grue+m_charge)+Gbase[1]*m_base)/(m_grue+m_charge+m_base))
+# Il s'avère en réalité qu'on n'a simulé que la dernière situation dans notre programme
 # Gtotal est donc le centre de gravité de tout le prototype lorsqu'il tient le 3eme fut à la hauteur maximale
 
 ##############################################
@@ -96,7 +97,6 @@ def centre_de_poussee(theta):
     
     """Retourne la position en x du centre de poussee lorsque la base est desequilibree d'un angle theta"""
     
-    # Dimensions du trapeze lorsque la base est desequilibrée. 
     # Note : on fait ici l'hypothèse que, bien que le volume immergé n'est pas un trapèze, la position de son centre de gravité est la même 
         
     Base = h_c + abs((long_base/2) * m.tan(theta))
@@ -141,9 +141,11 @@ def somme_des_couples(theta,Ca):
     "Retourne la somme totale des couples, puis Ca, Cg et Cr, le tout est un tuple"
     
     centre_de_poussee(theta) # Cette fonction globalise certaines valeurs, il faut donc l'éxécuter pour mettre à jour les valeurs du centre de poussée
+    
     Cg = - rotation(Gbase, theta)[0] * poids_base # Couple généré par la base
     Cr = (centre_de_poussee(theta) - rotation(Gtotal, theta)[0]) * vol_trapeze * 1000 * g # Couple de redressement généré par le flotteur
     # Note : On effectue ici une rotation de Gtotal, car il a changé légèrement de position lors de l'inclinaison de la grue
+    
     somme = (Ca + Cg + Cr) # Ca est techniquement compris dans Cg, on ne doit donc pas l'additionner à la somme
     return (somme, Ca, Cg, Cr)
 
