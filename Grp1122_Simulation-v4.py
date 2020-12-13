@@ -3,7 +3,7 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-import Modelisation_physique_v3 as mod
+import Grp1122_Modelisation_physique_v3 as mod
 
 ### Paramètres du système
 
