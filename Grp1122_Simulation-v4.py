@@ -18,7 +18,7 @@ end = 10.0           # durée [s]
 theta_0 = 0.0        # position initiale [m]
 omega_0 = 0.0        # vitesse initiale [m/s]
 Ca_0 = - mod.G[3][0] * (mod.poids_grue + mod.poids_charge)          # couple initial [N m]
-temps = 5            # temps que met la charge à arriver à sa position finale [s]
+temps = 4            # temps que met la charge à arriver à sa position finale [s]
 
 t = np.arange(0, end, step) # Temps
 theta = np.empty_like(t)    # Angle d'inclinaison      
