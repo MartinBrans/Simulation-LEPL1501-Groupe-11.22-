@@ -18,7 +18,7 @@ end = 10.0           # durée [s]
 theta_0 = 0.0        # position initiale [m]
 omega_0 = 0.0        # vitesse initiale [m/s]
 Ca_0 = - mod.G[3][0] * (mod.poids_grue + mod.poids_charge)          # couple initial [N m]
-temps = 3            # temps que met la charge à arriver à sa position finale [s]
+temps = 5            # temps que met la charge à arriver à sa position finale [s]
 
 t = np.arange(0, end, step) # Temps
 theta = np.empty_like(t)    # Angle d'inclinaison      
@@ -52,17 +52,15 @@ def simulation():
         
         dt = step
         
-
-        
-        if i * dt < temps:
+        if i * dt < temps: # Tant que la charge n'a pas fini son mouvement :
             # Hypothèse : le centre de gravité du bras + de la charge se déplace en ligne droite
             Gx[i+1] = ((mod.G[4][0]-mod.G[3][0])/temps)*(i+1)*dt + mod.G[3][0] # x = mt + p avec m = delta x/delta t
             Gy[i+1] = ((mod.G[4][1]-mod.G[3][1])/temps)*(i+1)*dt + mod.G[3][1] # y = mt + p avec m = delta y/delta t
-        else :
-            Gx[i+1] = mod.G[4][0] # Lorsque la masse a fini son mouvement, sa position est constante
+        else : # Lorsque la masse a fini son mouvement, sa position est constante
+            Gx[i+1] = mod.G[4][0] 
             Gy[i+1] = mod.G[4][1]
         
-        Ca[i+1] = - Gx[i+1] * (mod.poids_grue + mod.poids_charge) # Couple d'affaissement généré par le bras et la masse
+        Ca[i+1] = - Gx[i+1] * (mod.poids_grue + mod.poids_charge) # Couple d'affaissement généré par le bras et la charge   
         
         C = mod.somme_des_couples(theta[i],Ca[i])[0] - D*omega[i] # Somme des couples = Cr + Cg + Ca + Cd
         
@@ -73,7 +71,7 @@ def simulation():
     ### Calculs d'énergie
         
         E_G[i+1] = mod.poids_base*(mod.rotation(mod.Gbase,math.atan(mod.Gbase[1]/mod.Gbase[0])+theta[i])[1]-mod.Gbase[1])
-        #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0]) <- cette formule n'a pas été intégrée, pour le moment
+        #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0]) <- cette formule n'a pas été intégrée, pour le moment,
         #                                                                    car aucune fonction ne renvoie la composante verticale de la position du centre de poussée
         E_K[i+1] = I*omega[i]*omega[i]/2
         E_A[i+1] = Ca[i] * theta[i]
