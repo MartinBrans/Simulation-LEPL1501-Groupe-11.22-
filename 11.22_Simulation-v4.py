@@ -7,7 +7,7 @@ import Modelisation_physique_v3 as mod
 
 ### Paramètres du système
 
-D = 0.6             # Coefficient d'amortissement, cette valeur a été estimée, mais ne peut être confirmée que expérimentalement
+D = 0.5             # Coefficient d'amortissement, cette valeur a été estimée, mais ne peut être confirmée que expérimentalement
 I = 0.12            # Moment d'inertie, calculé sur Fusion 360
 
 
@@ -76,7 +76,7 @@ def simulation():
         #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0]) <- cette formule n'a pas été intégrée, pour le moment
         #                                                                    car aucune fonction ne renvoie la composante verticale de la position du centre de poussée
         E_K[i+1] = I*omega[i]*omega[i]/2
-        E_A[i+1] = -Ca[i] * theta[i]
+        E_A[i+1] = Ca[i] * theta[i]
         E_Total[i+1] = E_K[i+1] + E_G[i+1] + E_A[i+1] # + E_C[i+1]
         
 def distance_couple() :
@@ -98,7 +98,7 @@ def graphiques():
     
     plt.figure(1)
     plt.subplot(3,1,1)
-    plt.plot(t,theta*180/math.pi, label="Angle")
+    plt.plot(t,theta, label="Angle")
     plt.xlabel("Temps [s]")
     plt.ylabel("Theta [rad]")
     plt.legend(loc="upper right")
