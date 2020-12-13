@@ -102,7 +102,7 @@ def centre_de_poussee(theta):
     Base = h_c + abs((long_base/2) * m.tan(theta))
     base = h_c - abs((long_base/2) * m.tan(theta))
     global vol_trapeze
-    vol_trapeze = h_c * 0.095 * 4 # Comme précisé plus haut, la base n'est en réalité pas pleine, le calcul du vrai volume immergé est donc celui-ci 
+    vol_trapeze = h_c * 0.095 * 4 * long_base # Comme précisé plus haut, la base n'est en réalité pas pleine, le calcul du vrai volume immergé est donc celui-ci 
     
     # Position en x du centre de poussee
     
@@ -136,16 +136,16 @@ def rotation(position, theta) :
 # Calcul de la somme des couples après une rotation de theta
 ############################################################
 
-def somme_des_couples(theta):
+def somme_des_couples(theta,Ca):
     
     "Retourne la somme totale des couples, puis Ca, Cg et Cr, le tout est un tuple"
     
     centre_de_poussee(theta) # Cette fonction globalise certaines valeurs, il faut donc l'éxécuter pour mettre à jour les valeurs du centre de poussée
-    Cg = - rotation(Gtotal, theta)[0] * (poids_grue +poids_charge + poids_base) # Couple déstabilisateur généré par l'ensemble de la grue
+    Cg = - rotation(Gbase, theta)[0] * poids_base # Couple généré par la base
     Cr = (centre_de_poussee(theta) - rotation(Gtotal, theta)[0]) * vol_trapeze * 1000 * g # Couple de redressement généré par le flotteur
     # Note : On effectue ici une rotation de Gtotal, car il a changé légèrement de position lors de l'inclinaison de la grue
-    somme = (Cr + Cg) # Ca est techniquement compris dans Cg, on ne doit donc pas l'additionner à la somme
-    return (somme, Cg, Cr)
+    somme = (Ca + Cg + Cr) # Ca est techniquement compris dans Cg, on ne doit donc pas l'additionner à la somme
+    return (somme, Ca, Cg, Cr)
 
 def modele_1():
     """ Recherche dichotomique de l'angle d'équilibre, càd lorsque Cg + Cr == 0 """
@@ -155,12 +155,12 @@ def modele_1():
         theta = (first + last)/2
         
         Ca = - (poids_grue+poids_charge) * rotation((G[4][0],G[4][1]), theta)[0] # A nouveau, seul la derniere situation nous intéresse
-        Cg = somme_des_couples(theta, Ca)[1]
-        Cr = somme_des_couples(theta, Ca)[2]
+        Cg = somme_des_couples(theta, Ca)[2]
+        Cr = somme_des_couples(theta, Ca)[3]
         
         if abs(somme_des_couples(theta)[0]) < 0.001 :
             return (theta / m.pi) * 180
-        elif abs(Cr) < abs(Cg) :
+        elif abs(Cr) < abs(Ca) :
             last = theta - (1/1000)
         else:
             first = theta + (1/1000)
