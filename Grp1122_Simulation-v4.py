@@ -80,6 +80,7 @@ def simulation():
 def distance_couple() :
     """ Cette fonction sert à s'assurer que la position de la charge varie bien au cours du temps"""
     plt.figure(1)
+    plt.title("Deplacement de la charge en fonction du temps")
     plt.subplot(1,2,1)
     plt.plot(t, Gx, label = "Position horizontale du centre de gravite")
     plt.xlabel("Temps [s]")
@@ -95,6 +96,7 @@ def distance_couple() :
 def graphiques():
     
     plt.figure(1)
+    plt.title("Inclinaison, vitesse angulaire et accélération en fonction du temps")
     plt.subplot(3,1,1)
     plt.plot(t,theta, label="Angle")
     plt.xlabel("Temps [s]")
@@ -115,6 +117,7 @@ def graphiques():
 def graphique_detaille_theta() :
     
     plt.figure(1)
+    plt.title("Incilinaison en fonction du temps")
     plt.plot(t, theta, label = "Theta")
     plt.plot([0,end], [mod.theta_sub, mod.theta_sub], '--r', label='Submersion')
     plt.plot([0,end], [-mod.theta_sub, -mod.theta_sub], '--r')
