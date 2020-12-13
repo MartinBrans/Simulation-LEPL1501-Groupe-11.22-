@@ -147,7 +147,7 @@ def graphiques_energies() :
 
 if __name__ == "__main__" :
     simulation()
-    # distance_couple()
+    distance_couple()
     graphiques()
     graphique_detaille_theta()
     diagramme_de_phase()
