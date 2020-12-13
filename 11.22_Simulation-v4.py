@@ -64,7 +64,7 @@ def simulation():
         
         Ca[i+1] = - Gx[i+1] * (mod.poids_grue + mod.poids_charge) # Couple d'affaissement généré par le bras et la masse
         
-        C = mod.somme_des_couples(theta[i])[0] - D*omega[i] # Somme des couples = Cr + Cg + Cd
+        C = mod.somme_des_couples(theta[i],Ca[i])[0] - D*omega[i] # Somme des couples = Cr + Cg + Ca + Cd
         
         theta[i+1] = theta[i] + omega[i] * dt # On utilise des approximations linéaires à chaque pas pour calculer la position du point suivant
         omega[i+1] = omega[i] + a[i] * dt
@@ -72,11 +72,11 @@ def simulation():
         
     ### Calculs d'énergie
         
-        E_G[i+1] = (mod.poids_grue + mod.poids_charge + mod.poids_base)*(mod.rotation(mod.Gtotal,math.atan(mod.Gtotal[1]/mod.Gtotal[0])+theta[i])[1]-mod.Gtotal[1])
+        E_G[i+1] = mod.poids_base*(mod.rotation(mod.Gbase,math.atan(mod.Gbase[1]/mod.Gbase[0])+theta[i])[1]-mod.Gbase[1])
         #E_C[i+1] = -(mod.poids_ensemble + mod.poids_charge)*(y_C-y_C[0]) <- cette formule n'a pas été intégrée, pour le moment
         #                                                                    car aucune fonction ne renvoie la composante verticale de la position du centre de poussée
         E_K[i+1] = I*omega[i]*omega[i]/2
-        E_A[i+1] = -mod.somme_des_couples(theta[i])[1] * theta[i]
+        E_A[i+1] = -Ca[i] * theta[i]
         E_Total[i+1] = E_K[i+1] + E_G[i+1] + E_A[i+1] # + E_C[i+1]
         
 def distance_couple() :
