@@ -72,9 +72,9 @@ Gtotal = ((G[4][0]*(m_grue+m_charge)+Gbase[0]*m_base)/(m_grue+m_charge+m_base),(
 # Il s'avère en réalité qu'on n'a simulé que la dernière situation dans notre programme
 # Gtotal est donc le centre de gravité de tout le prototype lorsqu'il tient le 3eme fut à la hauteur maximale
 
-##############################################
+################################################
 # Calcul de la hauteur de la ligne de flottaison
-##############################################
+################################################
 
 h_c = (poids_grue + poids_base + poids_charge)/((4 * 0.095) * long_base * 1000 * g)
 
@@ -86,7 +86,7 @@ h_c = (poids_grue + poids_base + poids_charge)/((4 * 0.095) * long_base * 1000 *
 theta_sub =  - m.atan((h_base-h_c)/(long_base/2)) # Angle maximal avant la submersion de la base
 theta_soul =  - m.atan((h_c)/(long_base/2)) # Angle maximal avant le soulèvement du fond de la base
 global theta_max
-theta_max = max(theta_sub,theta_soul) # L'angle à ne pas dépasser est le plus petit des deux angles critiques
+theta_max = max(theta_sub,theta_soul) # L'angle à ne pas dépasser est le plus petit (en valeur absolue) des deux angles critiques
 
 
 ####################################################################################
@@ -124,7 +124,7 @@ def rotation(position, theta) :
     x,y = position
     r = m.sqrt(x**2+y**2)
     
-    # on calcule l'angle que forme le point de base avec la verticale
+    # on calcule l'angle que forme le point de base avec l'horizontale
     if x == 0 : # Si x vaut 0, il faut éviter qu'il y ait une ZeroDivisionError
         angle = m.pi/2
     else :
@@ -144,43 +144,44 @@ def somme_des_couples(theta,Ca):
     
     Cg = - rotation(Gbase, theta)[0] * poids_base # Couple généré par la base
     Cr = (centre_de_poussee(theta) - rotation(Gtotal, theta)[0]) * vol_trapeze * 1000 * g # Couple de redressement généré par le flotteur
-    # Note : On effectue ici une rotation de Gtotal, car il a changé légèrement de position lors de l'inclinaison de la grue
+    # Note : On effectue ici une rotation de Gtotal et de Gbase, car ils ont changé légèrement de position lors de l'inclinaison de la grue
     
-    somme = (Ca + Cg + Cr) # Ca est techniquement compris dans Cg, on ne doit donc pas l'additionner à la somme
+    somme = (Ca + Cg + Cr) 
     return (somme, Ca, Cg, Cr)
 
 def modele_1():
     """ Recherche dichotomique de l'angle d'équilibre, càd lorsque Ca + Cg + Cr == 0 """
     first = 0
     last = theta_max
-    while first <= last :
+    while first >= last :
         theta = (first + last)/2
         
         Ca = - (poids_grue+poids_charge) * rotation((G[4][0],G[4][1]), theta)[0] # A nouveau, seul la derniere situation nous intéresse
         Cg = somme_des_couples(theta, Ca)[2]
         Cr = somme_des_couples(theta, Ca)[3]
         
-        if abs(somme_des_couples(theta)[0]) < 0.0000001 :
-            return (theta / m.pi) * 180
+        if abs(somme_des_couples(theta, Ca)[0]) < 0.0000001 :
+            break
         elif abs(Cr) < abs(Ca) :
             first = theta - (1/10000000)
         else:
             last = theta + (1/10000000)
-                
+    return theta * 180 / m.pi
+  
 def modele_2():
     """ Recherche dichotomique de l'angle d'équilibre, càd lorsque le centre de gravité est au dessus du centre de poussée """
     first = 0
     last = theta_max
-    while first <= last :
+    while first >= last :
         theta = (first + last) / 2
         
         if abs(rotation(Gtotal, theta)[0] - centre_de_poussee(theta)) < 0.000001 :
-            return (theta / m.pi) * 180 
+            break 
         elif rotation(Gtotal, theta)[0] < centre_de_poussee(theta) :
             last = theta + (1/1000000)
         else :
             first = theta - (1/1000000)
-                
+    return (theta / m.pi) * 180 
                       
 if __name__ == "__main__" :           
     print("Modèle 1 : theta = ", modele_1())
